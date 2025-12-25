@@ -36,7 +36,7 @@ const CreateExpense = () => {
         id: Math.floor(100000 + Math.random() * 900000),
         title: form.title,
         totalAmount: total,
-        paidAmount: paid,
+        paidAmount: Number(paid) || 0,
         pendingAmount: pending,
       },
     ]);

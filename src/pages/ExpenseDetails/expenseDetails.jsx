@@ -63,10 +63,10 @@ const ExpenseDetails = () => {
     await supabase
       .from("money_tracker")
       .update({
-        title: expense.title,
-        totalAmount: expense.totalAmount,
-        paidAmount: expense.paidAmount,
-        pendingAmount: expense.pendingAmount,
+        title: expense?.title,
+        totalAmount: expense?.totalAmount,
+        paidAmount: Number(expense?.paidAmount) || 0,
+        pendingAmount: expense?.pendingAmount,
       })
       .eq("id", id);
 
