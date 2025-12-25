@@ -12,7 +12,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
 import { useNavigate } from "react-router-dom";
-import { AddCircleOutline, Home } from "@mui/icons-material";
+import { AddCircleOutline, Home, Logout } from "@mui/icons-material";
 
 function Header() {
   const navigate = useNavigate();
@@ -20,6 +20,12 @@ function Header() {
 
   const toggleDrawer = (state) => () => {
     setOpen(state);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn");
+    navigate("/login");
+    setOpen(false);
   };
 
   return (
@@ -31,7 +37,7 @@ function Header() {
             <HomeIcon />
           </IconButton>
 
-          {/* Center Title (Optional) */}
+          {/* Center Title */}
           <Typography variant="h6" sx={{ flexGrow: 1, ml: 1 }}>
             Money Tracker
           </Typography>
@@ -48,30 +54,45 @@ function Header() {
         </Toolbar>
       </AppBar>
 
-      {/* Drawer opens from RIGHT */}
+      {/* Drawer */}
       <Drawer anchor="right" open={open} onClose={toggleDrawer(false)}>
-        <List sx={{ width: 250 }}>
-          <ListItem disablePadding>
-            <ListItemButton
-              onClick={() => {
-                navigate("/");
-                setOpen(false);
-              }}
-            >
-              <ListItemText primary="Home" /> <Home />
-            </ListItemButton>
-          </ListItem>
+        <List sx={{ width: 250, display: "flex", flexDirection: "column", height: "100%" }}>
+          {/* Top links */}
+          <div>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={() => {
+                  navigate("/");
+                  setOpen(false);
+                }}
+              >
+                <ListItemText primary="Home" /> <Home />
+              </ListItemButton>
+            </ListItem>
 
+            <Divider />
+
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={() => {
+                  navigate("/create-expenses");
+                  setOpen(false);
+                }}
+              >
+                <ListItemText primary="Create Expense" /> <AddCircleOutline />
+              </ListItemButton>
+            </ListItem>
+          </div>
+
+          {/* Spacer */}
+          <div style={{ flexGrow: 1 }} />
+
+          {/* Bottom Logout */}
           <Divider />
-
           <ListItem disablePadding>
-            <ListItemButton
-              onClick={() => {
-                navigate("/create-expenses");
-                setOpen(false);
-              }}
-            >
-              <ListItemText primary="Create Expense" /> <AddCircleOutline />
+            <ListItemButton onClick={handleLogout}>
+              <ListItemText primary="Logout" />
+              <Logout />
             </ListItemButton>
           </ListItem>
         </List>
