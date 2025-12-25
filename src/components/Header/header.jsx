@@ -3,7 +3,7 @@ import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
-import HomeIcon from "@mui/icons-material/Home";
+import Diversity3Icon from '@mui/icons-material/Diversity3';
 import Typography from "@mui/material/Typography";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -24,6 +24,7 @@ function Header() {
 
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
+    window.location.reload()
     navigate("/login");
     setOpen(false);
   };
@@ -32,17 +33,14 @@ function Header() {
     <>
       <AppBar position="static">
         <Toolbar>
-          {/* Left side: Home Icon */}
           <IconButton color="inherit" onClick={() => navigate("/")}>
-            <HomeIcon />
+            <Diversity3Icon />
           </IconButton>
 
-          {/* Center Title */}
           <Typography variant="h6" sx={{ flexGrow: 1, ml: 1 }}>
             Money Tracker
           </Typography>
 
-          {/* Right side: Hamburger icon */}
           <IconButton
             edge="end"
             color="inherit"

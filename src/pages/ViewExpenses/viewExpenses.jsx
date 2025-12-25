@@ -5,21 +5,22 @@ import {
   CardContent,
   Typography,
   Grid,
-  Divider,
   IconButton,
+  TextField,
+  LinearProgress,
+  Stack,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../utils/SupabaseClient";
 import Spinner from "../../components/Spinner/spinner";
 import { EditOutlined } from "@mui/icons-material";
 
-// Sample data (replace with API/state later)
-
 const ViewExpenses = () => {
   const navigate = useNavigate();
-
   const [expensesData, setExpensesData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
   async function getProducts() {
     try {
       setLoading(true);
@@ -28,15 +29,10 @@ const ViewExpenses = () => {
         .select("*")
         .limit(1000);
       if (error) throw error;
-      if (data != null) {
-        console.log("data", data);
-        setExpensesData(data);
-
-        setLoading(false);
-      }
+      if (data) setExpensesData(data);
+      setLoading(false);
     } catch (error) {
       alert(error.message);
-
       setLoading(false);
     }
   }
@@ -44,109 +40,131 @@ const ViewExpenses = () => {
   useEffect(() => {
     getProducts();
   }, []);
-  const sortedExpenses = [...expensesData].sort(
-    (a, b) => b.pendingAmount - a.pendingAmount
-  );
+
+  const filteredExpenses = expensesData
+    .filter((expense) =>
+      expense.title.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => b.pendingAmount - a.pendingAmount);
 
   if (loading) {
     return (
-      <div
-        style={{
+      <Box
+        sx={{
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          padding: "20px",
           height: "50vh",
         }}
       >
         <Spinner />
-      </div>
+      </Box>
     );
   }
 
   return (
-    <Box sx={{ p: 1 }}>
-      <Typography
-        variant="h5"
-        fontWeight="bold"
-        gutterBottom
-        textAlign="center"
-      >
-        📊 View Expenses
-      </Typography>
+    <Box sx={{ p: 2 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+        <TextField
+          label="Search Expenses"
+          variant="outlined"
+          size="small"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{ width: "100%", maxWidth: 400 }}
+        />
+      </Box>
 
-      <Typography
-        variant="subtitle1"
-        color="text.secondary"
-        textAlign="center"
-        mb={2}
-      >
-        Expenses sorted by pending amount
-      </Typography>
+      <Grid container spacing={3}>
+        {filteredExpenses.map((expense) => {
+          const progress =
+            expense.totalAmount > 0
+              ? (expense.paidAmount / expense.totalAmount) * 100
+              : 0;
 
-      {/* Expense Cards */}
-      <Grid container spacing={1} alignItems="stretch" sx={{ width: "100%" }}>
-        {sortedExpenses?.map((expense) => (
-          <Grid
-            item
-            xs={12}
-            sm={12}
-            md={4}
-            key={expense.id}
-            display="flex"
-            sx={{ width: "100%" }}
-          >
-            <Card
-              sx={{
-                width: "100%",
-                flexGrow: 1,
-                display: "flex",
-                flexDirection: "column",
-              }}
-              onClick={() => navigate(`/expense-detail/${expense.id}`)}
-            >
-              <CardContent sx={{ position: "relative" }}>
-                {/* Edit Icon */}
+          return (
+            <Grid sx={{ width: '100%' }} item xs={12} sm={12} md={4} key={expense.id}>
+              <Card
+                sx={{
+                  height: "100%",
+                  width: '100%',
+                  position: "relative",
+                  borderRadius: 3,
+                  background: "linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%)",
+                  boxShadow:
+                    "0 8px 20px rgba(0,0,0,0.12), 0 6px 6px rgba(0,0,0,0.08)",
+                  cursor: "pointer",
+                  transition: "transform 0.2s, box-shadow 0.2s",
+                  "&:hover": {
+                    transform: "translateY(-5px)",
+                    boxShadow:
+                      "0 12px 24px rgba(0,0,0,0.2), 0 8px 12px rgba(0,0,0,0.1)",
+                  },
+                }}
+                onClick={() => navigate(`/expense-detail/${expense.id}`)}
+              >
+                {/* Edit Button */}
                 <IconButton
                   size="small"
                   sx={{ position: "absolute", top: 8, right: 8 }}
                   onClick={(e) => {
-                    e.stopPropagation(); // 🔑 prevent card click
+                    e.stopPropagation();
                     navigate(`/expense-detail/${expense.id}`);
                   }}
                 >
-                  <EditOutlined fontSize="small" />
+                  <EditOutlined />
                 </IconButton>
 
-                <Typography variant="h6" fontWeight="bold">
-                  {expense.title}
-                </Typography>
+                <CardContent>
+                  <Typography variant="h6" fontWeight="bold" gutterBottom>
+                    {expense.title}
+                  </Typography>
 
-                <Divider sx={{ my: 1 }} />
+                  <Stack spacing={1}>
+                    <LinearProgress
+                      variant="determinate"
+                      value={progress}
+                      sx={{
+                        height: 10,
+                        borderRadius: 5,
+                        backgroundColor: "#e0e0e0",
+                        "& .MuiLinearProgress-bar": {
+                          background:
+                            progress === 100
+                              ? "linear-gradient(90deg, #4caf50, #81c784)"
+                              : "linear-gradient(90deg, #ff9800, #ffc107)",
+                        },
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        fontSize: 14,
+                        mt: 0.5,
+                      }}
+                    >
+                      <Typography color="text.secondary">
+                        Total: ₹ {expense.totalAmount.toLocaleString("en-IN")}
+                      </Typography>
+                      <Typography color="success.main">
+                        Paid: ₹ {expense.paidAmount.toLocaleString("en-IN")}
+                      </Typography>
+                    </Box>
+                  </Stack>
 
-                <Typography variant="body2">
-                  <strong>Total:</strong> ₹{" "}
-                  {expense.totalAmount.toLocaleString("en-IN")}
-                </Typography>
-
-                <Typography variant="body2" color="success.main">
-                  <strong>Paid:</strong> ₹{" "}
-                  {expense.paidAmount.toLocaleString("en-IN")}
-                </Typography>
-
-                <Typography
-                  variant="body2"
-                  color={
-                    expense.pendingAmount > 0 ? "error.main" : "text.secondary"
-                  }
-                >
-                  <strong>Pending:</strong> ₹{" "}
-                  {expense.pendingAmount.toLocaleString("en-IN")}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
+                  <Typography
+                    variant="body2"
+                    color={expense.pendingAmount > 0 ? "error" : "text.secondary"}
+                    sx={{ mt: 1, fontWeight: 600 }}
+                  >
+                    Pending: ₹ {expense.pendingAmount.toLocaleString("en-IN")}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          );
+        })}
       </Grid>
     </Box>
   );

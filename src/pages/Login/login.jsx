@@ -27,7 +27,8 @@ const Login = () => {
     const handleLogin = () => {
         if (username === STATIC_USER && password === STATIC_PASS) {
             localStorage.setItem("isLoggedIn", "true");
-            navigate("/"); // redirect to home
+            navigate("/");
+            window.location.reload()
         } else {
             setError("Invalid username or password");
         }
